@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+  <title>Mirha's Birthday Invitation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #aeeeee; /* Pastel aquamarine */
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .button-container {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Play button slightly below center */
+    #playBtn {
+      top: 60%; 
+      transform: translateY(-30%);
+    }
+
+    #nextBtn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(250%);
+      width: 30vw;
+      max-width: 200px;
+      min-width: 90px;
+      height: auto;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .image-button {
+      cursor: pointer;
+      width: 30vw;         /* 30% of viewport width */
+      max-width: 200px;    /* Never larger than 200px */
+      min-width: 90px;     /* Never smaller than 90px */
+      height: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .image-button:hover {
+      opacity: 0.85;
+    }
+
+    /* Pulsating animation */
+    .pulsate {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .loader {
+      border: 12px solid #e0f7fa;
+      border-top: 12px solid #00bcd4;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    @media screen and (orientation: landscape) and (max-width: 900px) {
+      body::before {
+        content: "Please rotate your device to portrait mode for the best experience.";
+        position: fixed;
+        z-index: 99999;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #aeeeee;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5em;
+        text-align: center;
+        padding: 40px;
+      }
+      .video-container,
+      #loadingOverlay,
+      #playBtn,
+      #nextBtn,
+      #confirmBtn {
+        display: none !important;
+      }
+    }
+
+    #confirmBtn {
+      position: absolute;
+      top: 50%; 
+      transform: translateY(700%);
+      width: 30vw;
+      max-width: 200px;
+      min-width: 90px;
+      height: auto;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" style="
+    position:fixed;top:0;left:0;width:100vw;height:100vh;
+    background:#aeeeee;z-index:9999;display:flex;justify-content:center;align-items:center;flex-direction:column;">
+    <div class="loader"></div>
+    <span style="margin-top:20px;font-size:1.2em;color:#333;">Loading...</span>
+  </div>
+
+  <div class="video-container">
+    <video id="backgroundVideo" autoplay loop muted playsinline>
+      <source src="https://github.com/Atif-Ahmed/Mirha-birthday-invite/raw/refs/heads/main/Intro.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+    <video id="mainVideo" style="display: none;" playsinline>
+      <source src="https://github.com/Atif-Ahmed/Mirha-birthday-invite/raw/refs/heads/main/main.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+    <video id="venueVideo" style="display: none;" playsinline>
+      <source src="https://github.com/Atif-Ahmed/Mirha-birthday-invite/raw/refs/heads/main/rsvp_video.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+    <audio id="myAudio" src="https://github.com/Atif-Ahmed/Mirha-birthday-invite/raw/refs/heads/main/Birthday%20No%20Vocal.MP3"></audio>
+
+    <div class="button-container" id="playBtn">
+      <img src="Prop_shell.png" class="image-button pulsate" alt="Play" onclick="startMainVideo()" />
+    </div>
+
+    <div class="button-container" id="nextBtn">
+      <img src="Next_Btn.png" class="image-button pulsate" alt="Next" onclick="goNext()" />
+    </div>
+
+    <div class="button-container" id="confirmBtn">
+      <img src="rsvp_btn.png" class="image-button pulsate" alt="Confirm" id="confirmButton" />
+    </div>
+
+  </div>
+
+  <script>
+    const backgroundVideo = document.getElementById('backgroundVideo');
+    const mainVideo = document.getElementById('mainVideo');
+    const playBtn = document.getElementById('playBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const audio = document.getElementById('myAudio');
+    const venueVideo = document.getElementById('venueVideo');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const confirmButton = document.getElementById('confirmButton');
+    const googleFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfzhtCA-2SOsd7RqTIezw6BdLdrLPh05y9D7UXGtAjx43C57w/viewform?usp=header"; // <-- Replace with your actual Google Form link
+
+    venueVideo.addEventListener('play', function() {
+      // Show confirm button after 5 seconds
+      setTimeout(() => {
+        confirmBtn.style.display = 'flex';
+      }, 5000);
+    });
+
+    confirmButton.addEventListener('click', function() {
+      window.open(googleFormUrl, '_blank');
+    });
+
+    function startMainVideo() {
+      backgroundVideo.style.display = 'none';
+      mainVideo.style.display = 'block';
+      mainVideo.play();
+      playBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      setTimeout(() => {
+        nextBtn.style.display = 'flex';
+      }, 20000); // change this back to 20- seconds for production
+
+      // Play audio after 10 seconds (10000 ms), then fade in
+      setTimeout(() => {
+        audio.volume = 0.1; // Start at low volume
+        audio.play();
+
+        // Gradually increase volume to 1 over 5 seconds
+        let fadeInterval = setInterval(() => {
+          if (audio.volume < 1.0) {
+            audio.volume = Math.min(audio.volume + 0.05, 1.0);
+          } else {
+            clearInterval(fadeInterval);
+          }
+        }, 250); // Adjust interval and increment for smoother fade
+      }, 10000);
+    }
+
+    function goNext() {
+      mainVideo.style.display = 'none';
+      nextBtn.style.display = 'none';
+      venueVideo.style.display = 'block';
+      venueVideo.play();
+    }
+
+    // Wait for all assets (videos, audio, images) to load
+    window.addEventListener('load', () => {
+      const videos = [
+        document.getElementById('backgroundVideo'),
+        document.getElementById('mainVideo'),
+        document.getElementById('venueVideo')
+      ];
+      const audio = document.getElementById('myAudio');
+      const images = [
+        ...document.querySelectorAll('img')
+      ];
+
+      let loaded = 0;
+      const total = videos.length + 1 + images.length; // videos + audio + images
+
+      function checkLoaded() {
+        loaded++;
+        if (loaded >= total) {
+          document.getElementById('loadingOverlay').style.display = 'none';
+        }
+      }
+
+      videos.forEach(video => {
+        if (video.readyState >= 3) {
+          checkLoaded();
+        } else {
+          video.oncanplaythrough = checkLoaded;
+          video.onerror = checkLoaded;
+        }
+      });
+
+      if (audio.readyState >= 3) {
+        checkLoaded();
+      } else {
+        audio.oncanplaythrough = checkLoaded;
+        audio.onerror = checkLoaded;
+      }
+
+      images.forEach(img => {
+        if (img.complete) {
+          checkLoaded();
+        } else {
+          img.onload = checkLoaded;
+          img.onerror = checkLoaded;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
